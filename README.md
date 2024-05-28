@@ -142,6 +142,10 @@ The command I used to generate and save the plots in the `translations` director
 
 ![image](https://github.com/alemsiz/mt-exercise-5/assets/152906037/264a7d0e-ca2c-4510-95fe-85edf381658b)
 
-## Discussion
+### Discussion
 
-Given your graphs, describe the impact of beam size on BLEU and time. Give your personal take on which beam size you would choose in the future
+The time taken to generate the translations increases linearly with the beam size, as can be seen in the second graph. 
+
+As for the relationship between beam size and BLEU score, this is slightly more complex. Firstly, the BLEU score increases significantly between beam sizes 2 and 4, peaking at 4, and then falling consistently between 4 and 20. Nonetheless, the BLEU score only varies within a range of 0.5 points overall (between the maximum at beam size 4 and the minimum at beam size 18/20), so the differences are not significant.
+
+In light of these results, I would choose a beam size of 4 in the future, since this optimises the BLEU score while also keeping the generation time low.

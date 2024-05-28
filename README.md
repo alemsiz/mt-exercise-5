@@ -58,10 +58,11 @@ This script contains a variable `vocab_size` which determines the desired size o
 
 Within this directory of output files for the specified vocabulary size, the BPE codes for the learned model can be found in the file `codes.BPE`, while the cleaned (= symbol counts removed) version of the shared vocabulary is found in `bpe_vocab.it-en.joint.cleaned` - this is the vocabulary file we will use to configure the BPE-level JoeyNMT model. The output directory also contains the non-cleaned (= contains symbol counts) version of the shared vocabulary (`bpe_vocab.it-en.joint`) as well as the language-specific vocabularies (`bpe_vocab.en` and `bpe_vocab.it`), but note that they are not used further in my experiments here.
 
-In order to learn the BPE model and generate the shared vocabulary for both of my chosen vocabulary sizes (2000 and 4000), I ran the following command twice, changing the `vocab_size` variable in the script accordingly each time:
+In order to learn the BPE model and generate the shared vocabulary for both of my chosen vocabulary sizes (2000 and 4000), I ran the following command twice, changing the `vocab_size` variable in the script accordingly for each run:
+
+    ./scripts/learn_bpe_and_get_joint_vocab.sh
 
     
-
 ### JoeyNMT model configurations
 
 The following are the configuration files for the three models I trained:
@@ -72,15 +73,15 @@ BPE-level model with vocab size 4000: `configs/bpe_level_model_4000.yaml`
 
 For all three models, the training, testing and dev filenames under `data` in the configuration files were replaced with the IT-EN datasets from the multilingual task of the IWSLT 2017 evaluation campaign (excluding the final `it` or `en` in the filenames, since these are added automatically by JoeyNMT). The source (IT) and target (EN) languages were also updated accordingly, and `level` was set to `word` for the word-level model and `bpe` for the BPE-level models in both the `src` and `trg` fields. Further, for all three models the `model_dir` field under `training` was set to the appropriate filepath.
 
-For the word-level model, no vocabulary files were built before training, so the field `voc limit` was set to 2000 under both `src` and `trg`, defining a vocabulary threshold of 2000 for both languages. Since you can only share input and output embeddings (`tied embeddings`=True) if you use the exact same vocabulary for each language, `tied_embeddings` under `model` is set to False here. Further, since the model is word-level, no subword tokenizer was set in `tokenizer_type`; instead only Moses pretokenization is applied, as specified under `tokenizer_cfg`.
+For the word-level model, no vocabulary files were built before training, so the field `voc_limit` was set to 2000 under both `src` and `trg`, defining a vocabulary threshold of 2000 for both languages. Since input and output embeddings can only be shared (`tied embeddings`=True) if the exact same vocabulary is used for each language, `tied_embeddings` under `model` is set to False here. Further, since the model is word-level, no subword tokenizer was set in `tokenizer_type`; instead only Moses pretokenization is applied, as specified under `tokenizer_cfg`.
 
-For the BPE-level models, no `voc_limit` was provided, since in the previous subsection [here](#bpe-learning-and-joint-vocabulary-creation) we already generated a shared vocabulary. The filepath of this shared vocabulary is added in the `voc_file` field under `data/src` and `data/trg`. Further, for these models a `tokenizer_type` is specified: `subword-nmt`, and in `tokenizer_cfg`, the BPE codes file generated in the previous subsection is added in the field `codes`, so that BPE can be applied to the raw training, testing and dev datasets (this is done automatically by JoeyNMT). 
+For the BPE-level models, I did not provide a `voc_limit`, since in the previous subsection [here](#bpe-learning-and-joint-vocabulary-creation) we already generated a shared vocabulary. The filepath of this shared vocabulary is added in the `voc_file` field under `data/src` and `data/trg` in the configuration files. Further, for these models a `tokenizer_type` is specified: `subword-nmt`. In `tokenizer_cfg`, the BPE codes file generated in the previous subsection is added in the field `codes`, so that BPE can be applied to the raw training, testing and dev datasets (this is done automatically by JoeyNMT). 
 
 ## Part 1 results
 
 ### Evaluation method
 
-In order to evaluate the three models I trained, I ran `scripts/evaluate.sh` three times, replacing the `model_name` variable each time. The test translations for each model were saved in the respective subfolder in the `translations` folder and the BLEU score information was printed in the terminal.
+In order to evaluate the three models I trained, I ran `scripts/evaluate.sh` three times, replacing the `model_name` variable accordingly each time. The test translations for each model were saved in the respective subfolder in the `translations` folder and the BLEU score information was printed to the terminal. I then manually created the following results table by extracting the BLEU scores from the terminal output.
 
 ### Results
 
@@ -92,7 +93,7 @@ In order to evaluate the three models I trained, I ran `scripts/evaluate.sh` thr
 
 ### Discussion
 
-It is clear from the results table above that the BLEU score is significantly higher for the models that use BPE than for the word-level model. However, the difference between the scores of the two BPE models with differing vocabulary sizes is marginal, with the larger-vocabulary model achieving one BLEU point more than the smaller-vocabulary model.
+It is clear from the results table above that the BLEU score is significantly higher for the models that use BPE than for the word-level model. However, the difference between the scores of the two BPE models with differing vocabulary sizes is marginal, with the larger-vocabulary model achieving just one BLEU point more than the smaller-vocabulary model.
 
 The difference in performance between the word- and BPE-level models is also striking when manually examining the output test translations. While almost every segment in the word-level translation contains \<unk\> tokens, there are none in the BPE translations. However, the BPE translations still contain numerous errors, mostly in the form of nonsensical/pseudo words which have been generated by concatenating subword units in the wrong way. 
 
@@ -110,15 +111,15 @@ Furthermore, despite the numerous gaps in the word-level translations due to the
 - `bpe_level_model_2000`: 'As a potaste of plugging plugs, oil forests, oil forests, oil gas, and they are disappearing fast, and they are disappearing our actions to get out of this guys out of this guair out of this guair out of this guys out of this guair out of this guy.'
 - `bpe_level_model_4000`: 'Wather pockle, land far, rainforests and pluvial: they're disappeared, and they are disappeared, and they are disappeared, and if we don't met our actions to pull away from this guy, disappearing out of this guy, we also disappeared.'
 
-In both BPE-based outputs, the same phrases are repeated multiple times superfluously ('out of this guys out of this guair' in the 2000-vocab model and 'and they are disappeared' in the 4000-vocab model), which greatly reduces the fluency. On the other hand, the structure of the word-level output seems much more natural overall and matches the reference more closely.
+In both BPE-based outputs, the same phrases are repeated multiple times redundantly ('out of this guys out of this guair' in the 2000-vocab model and 'and they are disappeared' in the 4000-vocab model), which greatly reduces the fluency. On the other hand, the structure of the word-level output seems much more natural overall and matches the reference more closely.
 
 ## Part 2 modifications
 
-In order to investigate the effect of beam size on the BLEU score and generation time, I used my highest-scoring model (`bpe_level_model_4000`) and evaluated it 10 times, beginning with a beam size of 2 and incrementing it by 2 each time, ending up at 20. 
+In order to investigate the effect of beam size on the BLEU score and generation time, I used my highest-scoring model (`bpe_level_model_4000`) and evaluated it 10 times, varying the beam size each time. I started with a beam size of 2 and incremented it by 2 each time, ending up at 20. 
 
-In order to vary the beam size, I had to generate 10 different versions of the `bpe_word_level_4000.yaml` configuration file, each with a different value for `testing/beam_size`. To automate this process, I created a Python script (`scripts/generate_config_beam_size_variants.py`) which creates the 10 different configuration files and saves them in the folder `configs/bpe_level_model_4000_beam_size`.
+In order to vary the beam size, I had to generate 10 different versions of the `bpe_word_level_4000.yaml` configuration file, each with a different value for `beam_size` under `testing`. To automate this process, I created a Python script (`scripts/generate_config_beam_size_variants.py`) which creates the 10 different configuration files and saves them in the folder `configs/bpe_level_model_4000_beam_size`.
 
-To run the 10 evaluations for the different beam sizes, I created the script `scripts/beam_size_evaluate.sh` which first runs the Python script to generate the 10 configuration files. Once these have been generated, the script loops through the 10 beam sizes, assembles the corresponding configuration filename for each one and then translates the test set using this configuration file (i.e. using the specified beam size). Then, the case-sensitive BLEU score is produced.
+To run the 10 evaluations for the different beam sizes, I created the script `scripts/beam_size_evaluate.sh`, which first runs the Python script mentioned in the previous paragraph to generate the 10 configuration files. Once these have been generated, the script loops through the 10 beam sizes, assembles the corresponding configuration filename for each one and then translates the test set using the relevant configuration file (i.e. using the specified beam size). Then, the case-sensitive BLEU score for each beam size is computed and printed to the terminal.
 
 To run this script:
 
@@ -126,13 +127,13 @@ To run this script:
 
 Once the script has finished running and looped through all the beam sizes, the 10 output translations can be found in `translations/beam_size_translations` and the generation times and BLEU scores are printed to the terminal.
 
-In order to visualise the results, I manually created a CSV file from the terminal outputs which contains the BLEU score and time taken for generation for each beam size. This can be found in `translations/beam_size_translations/beam_size_results.csv`.
+In order to visualise the results, I manually created a CSV file from the printed terminal outputs which contains the BLEU score and time taken for generation per beam size. This results file can be found in `translations/beam_size_translations/beam_size_results.csv`.
 
-Then, I created a Python script to produce the actual visualisations (`scripts/visualise_results.py`). Please run the following command before running this file:
+Then, I created a Python script to produce the visualisations (`scripts/visualise_results.py`). Please run the following command before running this file, since the script relies on the `argparse` Python library:
 
     pip install argparse
 
-The script takes two command line arguments: (1) The filename of the CSV file containing the BLEU and time results, (2) The directory the plots should be saved in.
+The script takes two command line arguments: (1) the filename of the CSV file containing the BLEU and time results, and (2) the directory the plots should be saved in.
 
 The command I used to generate and save the plots in the `translations` directory was:
 
@@ -150,6 +151,6 @@ The command I used to generate and save the plots in the `translations` director
 
 The time taken to generate the translations increases linearly with the beam size, as can be seen in the second graph. 
 
-As for the relationship between beam size and BLEU score, this is slightly more complex. Firstly, the BLEU score increases significantly between beam sizes 2 and 4, peaking at 4, and then falling consistently between 4 and 20. Nonetheless, the BLEU score only varies within a range of 0.5 points overall (between the maximum at beam size 4 and the minimum at beam size 18/20), so the differences are not significant.
+As for the relationship between beam size and BLEU score, this is slightly more complex. Firstly, the BLEU score increases between beam sizes 2 and 4, peaking at 4, and then falling consistently between 4 and 20. Nonetheless, the BLEU score only varies within a range of 0.5 points overall (between the maximum of 22.2 at beam size 4 and the minimum of 21.7 at beam size 18/20), so the differences are not so significant.
 
 In light of these results, I would choose a beam size of 4 in the future, since this optimises the BLEU score while also keeping the generation time low.

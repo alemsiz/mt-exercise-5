@@ -52,7 +52,7 @@ This generated the two subsampled training files which I use from now on: `head1
 
 ### BPE learning and joint vocabulary creation
 
-For this step, I followed the best practices for Subword NMT (https://github.com/rsennrich/subword-nmt#best-practice-advice-for-byte-pair-encoding-in-nmt)[https://github.com/rsennrich/subword-nmt#best-practice-advice-for-byte-pair-encoding-in-nmt]. To this end, I created a single shell script to both learn the BPE model for the training texts and generate a shared vocabulary for both the source and target language: `learn_bpe_and_get_joint_vocab.sh`.
+For this step, I followed the best practices for Subword NMT [https://github.com/rsennrich/subword-nmt#best-practice-advice-for-byte-pair-encoding-in-nmt]. To this end, I created a single shell script to both learn the BPE model for the training texts and generate a shared vocabulary for both the source and target language: `learn_bpe_and_get_joint_vocab.sh`.
 
 This script contains a variable `vocab_size` which determines the desired size of the shared vocabulary. It should be set within the script itself for each variation. The output BPE codes file (from the learned model) as well as the shared vocabulary are saved in the directory `bpe_data/{vocab_size}`, e.g. if `vocab_size` is set to 2000 in the script, the output files are stored in `bpe_data/2000`.
 

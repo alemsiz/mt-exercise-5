@@ -48,7 +48,7 @@ In order to sub-sample my parallel training data to 100k sentence pairs, I creat
     ./scripts/subsample_data.sh data/train.it-en.it
     ./scripts/subsample_data.sh data/train.it-en.en
 
-This generated the two subsampled training files which I use from now on: `head100k.train.it-en.it` and `head100k.train.it-en.en`.
+This generated two subsampled training files in the `data` folder which I use as the model training data from this point on: `head100k.train.it-en.it` and `head100k.train.it-en.en`.
 
 ### BPE learning and joint vocabulary creation
 
@@ -56,7 +56,11 @@ For this step, I followed the best practices for Subword NMT [https://github.com
 
 This script contains a variable `vocab_size` which determines the desired size of the shared vocabulary. It should be set within the script itself for each variation. The output BPE codes file (from the learned model) as well as the shared vocabulary are saved in the directory `bpe_data/{vocab_size}`, e.g. if `vocab_size` is set to 2000 in the script, the output files are stored in `bpe_data/2000`.
 
-Within this directory of output files for the specified vocabulary size, the BPE codes for the learned model can be found in the file `codes.BPE`, while the cleaned (= symbol counts removed) version of the shared vocabulary is found in `bpe_vocab.it-en.joint.cleaned` - this is the vocabulary file we will use to configure the BPE-level JoeyNMT model. The language-specific vocabularies are also output by the script so they could be used for a different model configuration, but they are not used further in my experiments.
+Within this directory of output files for the specified vocabulary size, the BPE codes for the learned model can be found in the file `codes.BPE`, while the cleaned (= symbol counts removed) version of the shared vocabulary is found in `bpe_vocab.it-en.joint.cleaned` - this is the vocabulary file we will use to configure the BPE-level JoeyNMT model. The output directory also contains the non-cleaned (= contains symbol counts) version of the shared vocabulary (`bpe_vocab.it-en.joint`) as well as the language-specific vocabularies (`bpe_vocab.en` and `bpe_vocab.it`), but note that they are not used further in my experiments here.
+
+In order to learn the BPE model and generate the shared vocabulary for both of my chosen vocabulary sizes (2000 and 4000), I ran the following command twice, changing the `vocab_size` variable in the script accordingly each time:
+
+    
 
 ### JoeyNMT model configurations
 

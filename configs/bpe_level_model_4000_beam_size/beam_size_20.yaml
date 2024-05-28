@@ -1,0 +1,92 @@
+data:
+  dataset_type: plain
+  dev: data/dev.it-en
+  src:
+    lang: it
+    level: bpe
+    lowercase: false
+    max_sent_length: 100
+    tokenizer_cfg:
+      codes: bpe_data/4000/codes.BPE
+      num_merges: 4000
+      pretokenizer: none
+    tokenizer_type: subword-nmt
+    voc_file: bpe_data/4000/bpe_vocab.it-en.joint.cleaned
+  test: data/test.it-en
+  train: data/head100k.train.it-en
+  trg:
+    lang: en
+    level: bpe
+    lowercase: false
+    max_sent_length: 100
+    tokenizer_cfg:
+      codes: bpe_data/4000/codes.BPE
+      num_merges: 4000
+      pretokenizer: none
+    tokenizer_type: subword-nmt
+    voc_file: bpe_data/4000/bpe_vocab.it-en.joint.cleaned
+joeynmt_version: 2.0.0
+model:
+  bias_initializer: zeros
+  decoder:
+    dropout: 0
+    embeddings:
+      dropout: 0
+      embedding_dim: 256
+      scale: true
+    ff_size: 512
+    hidden_size: 256
+    num_heads: 2
+    num_layers: 1
+    type: transformer
+  embed_init_gain: 1.0
+  embed_initializer: xavier_uniform
+  encoder:
+    dropout: 0
+    embeddings:
+      dropout: 0
+      embedding_dim: 256
+      scale: true
+    ff_size: 512
+    hidden_size: 256
+    num_heads: 2
+    num_layers: 4
+    type: transformer
+  init_gain: 1.0
+  initializer: xavier_uniform
+  tied_embeddings: true
+  tied_softmax: true
+name: bpe_level_model_4000
+testing:
+  alpha: 1.0
+  beam_size: 20
+training:
+  batch_size: 2048
+  batch_type: token
+  decrease_factor: 0.7
+  early_stopping_metric: ppl
+  epochs: 10
+  eval_batch_size: 1024
+  eval_batch_type: token
+  eval_metric: bleu
+  label_smoothing: 0.3
+  learning_rate: 0.0003
+  logging_freq: 100
+  max_output_length: 100
+  model_dir: models/bpe_level_model_4000
+  normalization: tokens
+  optimizer: adam
+  overwrite: false
+  patience: 8
+  print_valid_sents:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  random_seed: 42
+  scheduling: plateau
+  shuffle: true
+  use_cuda: false
+  validation_freq: 500
+  weight_decay: 0.0

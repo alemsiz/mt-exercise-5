@@ -3,15 +3,15 @@
 scripts=$(dirname "$0")
 base=$scripts/..
 
-data=$base/sampled_data
+data=$base/data
 configs=$base/configs
 
 translations=$base/translations
 
 mkdir -p $translations
 
-src=?
-trg=?
+src=it
+trg=en
 
 
 num_threads=4
@@ -21,7 +21,7 @@ device=0
 
 SECONDS=0
 
-model_name=?
+model_name=bpe_level_model_4000
 
 echo "###############################################################################"
 echo "model_name $model_name"
@@ -30,11 +30,11 @@ translations_sub=$translations/$model_name
 
 mkdir -p $translations_sub
 
-CUDA_VISIBLE_DEVICES=$device OMP_NUM_THREADS=$num_threads python -m joeynmt translate $configs/$model_name.yaml < $data/test.$src > $translations_sub/test.$model_name.$trg
+CUDA_VISIBLE_DEVICES=$device OMP_NUM_THREADS=$num_threads python -m joeynmt translate $configs/$model_name.yaml < $data/test.it-en.$src > $translations_sub/test.$model_name.$trg
 
 # compute case-sensitive BLEU 
 
-cat $translations_sub/test.$model_name.$trg | sacrebleu $data/test.$trg
+cat $translations_sub/test.$model_name.$trg | sacrebleu $data/test.it-en.$trg
 
 
 echo "time taken:"
